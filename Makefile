@@ -4,10 +4,10 @@ COMPOSE := docker compose
 WAIT_TIMEOUT := 3600
 TOOLS := tools/node_modules/.installed
 
-.PHONY: help env up start bootstrap deploy down reset ps logs
+.PHONY: help env up start bootstrap deploy seed trigger report test e2e down reset ps logs
 
 help: ## Show this help
-	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-10s %s\n", $$1, $$2}'
+	@grep -hE '^[a-z0-9-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-10s %s\n", $$1, $$2}'
 
 $(TOOLS): tools/package.json tools/package-lock.json
 	@cd tools && npm ci --no-audit --no-fund --silent
@@ -26,6 +26,18 @@ bootstrap: $(TOOLS) ## Configure every system (idempotent)
 
 deploy: $(TOOLS) ## Redeploy the workflow and reference data only
 	@node tools/bootstrap.js deploy
+
+seed: $(TOOLS) ## Add demo screenings to OpenMRS
+	@node tools/seed.js
+
+trigger: $(TOOLS) ## Run the workflow now and print its log
+	@node tools/trigger.js
+
+test: ## Unit tests for the workflow's logic (no sandbox needed)
+	@node --test workflow/test/*.test.js
+
+e2e: $(TOOLS) ## End-to-end test against the running sandbox
+	@node tools/e2e.js
 
 down: ## Stop everything (data is kept)
 	$(COMPOSE) down

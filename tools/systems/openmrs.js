@@ -10,7 +10,10 @@ const auth = { Authorization: basicAuth(env.OPENMRS_ADMIN_USER, env.OPENMRS_ADMI
 const rest = (method, path, options = {}) =>
   request(method, `${urls.openmrs}/ws/rest/v1/${path}`, { ...options, headers: { ...auth, ...options.headers } });
 
-export const openmrs = { rest };
+const fhir = (path, query) =>
+  request('GET', `${urls.openmrs}/ws/fhir2/R4/${path}`, { query, headers: { ...auth, Accept: 'application/fhir+json' } });
+
+export const openmrs = { rest, fhir };
 
 export async function ready() {
   await waitFor('OpenMRS REST API', async () => (await rest('GET', 'session')).data.authenticated, { timeout: 1_800_000 });
@@ -62,4 +65,41 @@ export async function ensureAdminProvider() {
   if (!person) throw new Error(`user ${env.OPENMRS_ADMIN_USER} not found`);
   await rest('POST', 'provider', { body: { person, identifier } });
   return 'created';
+}
+
+// ── Test data (used by `make seed` and the end-to-end test) ─────────────────
+
+const PHONE_ATTRIBUTE = '14d4f066-15f5-102d-96e4-000c29c2a5d7';
+const OPENMRS_ID_SOURCE = '8549f706-7e85-4c1d-9424-217d50a2988b';
+
+export async function createPatient({ givenName, familyName, gender, birthdate, phone }) {
+  const settings = readJson('reference-data/settings.json');
+  const { data: id } = await rest('POST', `idgen/identifiersource/${OPENMRS_ID_SOURCE}/identifier`, { body: {} });
+  const { data: patient } = await rest('POST', 'patient', {
+    body: {
+      person: {
+        names: [{ givenName, familyName }],
+        gender,
+        birthdate,
+        attributes: phone ? [{ attributeType: PHONE_ATTRIBUTE, value: phone }] : [],
+      },
+      identifiers: [{ identifier: id.identifier, identifierType: settings.openmrs.openmrsIdType, preferred: true }],
+    },
+  });
+  return { uuid: patient.uuid, openmrsId: id.identifier };
+}
+
+// readings: { [conceptUuid]: number }
+export async function createScreening({ patient, site, date = new Date(), readings }) {
+  const { openmrs: ids } = readJson('reference-data/settings.json');
+  const { data } = await rest('POST', 'encounter', {
+    body: {
+      patient,
+      encounterType: ids.encounterType,
+      location: site,
+      encounterDatetime: date.toISOString().replace('Z', '+0000'),
+      obs: Object.entries(readings).map(([concept, value]) => ({ concept, value })),
+    },
+  });
+  return data.uuid;
 }

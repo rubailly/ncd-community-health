@@ -78,12 +78,18 @@ export async function ensureHealthcareDomain() {
 }
 
 // The user OpenFn signs in as. Its API key comes from .env, so the OpenFn
-// credential never needs to change; re-applying it is harmless.
+// credential never needs to change; re-applying it is harmless. Nursing User
+// is the least-privileged Healthcare role that can read practitioners and
+// create patients and appointments.
 export async function ensureIntegrationUser() {
-  const keys = { api_key: env.ERPNEXT_API_KEY, api_secret: env.ERPNEXT_API_SECRET };
+  const access = {
+    api_key: env.ERPNEXT_API_KEY,
+    api_secret: env.ERPNEXT_API_SECRET,
+    roles: [{ role: 'Nursing User' }],
+  };
   const existing = await find('User', env.ERPNEXT_API_USER);
   if (existing) {
-    await api('PUT', resource('User', env.ERPNEXT_API_USER), { body: keys });
+    await api('PUT', resource('User', env.ERPNEXT_API_USER), { body: access });
   } else {
     await create('User', {
       email: env.ERPNEXT_API_USER,
@@ -91,8 +97,7 @@ export async function ensureIntegrationUser() {
       last_name: 'Integration',
       user_type: 'System User',
       send_welcome_email: 0,
-      roles: [{ role: 'System Manager' }, { role: 'Healthcare Administrator' }],
-      ...keys,
+      ...access,
     });
   }
   const { data } = await request('GET', `${urls.erpnext}/api/method/frappe.auth.get_logged_user`, {

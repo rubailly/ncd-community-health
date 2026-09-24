@@ -54,6 +54,16 @@ const credentials = () => ({
   },
 });
 
+// Runs Elixir inside the Lightning node. Used only where Lightning has no API
+// for something: creating the first user, and a workflow's concurrency limit.
+function lightningRpc(code) {
+  const result = spawnSync('docker', ['compose', 'exec', '-T', 'openfn', '/app/bin/lightning', 'rpc', code], {
+    cwd: path('.').pathname,
+    encoding: 'utf8',
+  });
+  return result.stdout + result.stderr;
+}
+
 export async function ready() {
   await waitFor('OpenFn Lightning', async () => (await request('GET', `${urls.openfn}/health_check`)).status === 200);
 }
@@ -85,12 +95,9 @@ export async function ensureUser() {
         user -> user
       end
     IO.puts("token:" <> Accounts.generate_api_token(user))`;
-  const result = spawnSync('docker', ['compose', 'exec', '-T', 'openfn', '/app/bin/lightning', 'rpc', code], {
-    cwd: path('.').pathname,
-    encoding: 'utf8',
-  });
-  const token = result.stdout.match(/^token:(\S+)$/m)?.[1];
-  if (!token) throw new Error(`could not create the user or token: ${(result.stdout + result.stderr).trim().slice(-500)}`);
+  const output = lightningRpc(code);
+  const token = output.match(/^token:(\S+)$/m)?.[1];
+  if (!token) throw new Error(`could not create the user or token: ${output.trim().slice(-500)}`);
   saveEnv('OPENFN_API_TOKEN', token);
   if (!(await tokenValid())) throw new Error('the issued token is not accepted');
   return 'token issued and saved to .env';
@@ -181,8 +188,22 @@ export async function buildProvisioning() {
 export async function deployWorkflow() {
   const document = await buildProvisioning();
   await api('POST', '/api/provision', { body: document, timeout: 120_000 });
+
+  // One run at a time, so a scheduled and a manual run never race on the
+  // cursor. Neither the provisioning nor the workflows API sets this.
+  const ids = document.workflows.map(wf => JSON.stringify(wf.id)).join(', ');
+  const output = lightningRpc(`
+    for id <- [${ids}] do
+      Lightning.Workflows.Workflow
+      |> Lightning.Repo.get!(id)
+      |> Ecto.Changeset.change(concurrency: 1)
+      |> Lightning.Repo.update!()
+    end
+    IO.puts("updated:${document.workflows.length}")`);
+  if (!/^updated:\d+$/m.test(output)) throw new Error(`could not set workflow concurrency: ${output.trim().slice(-300)}`);
+
   const jobs = document.workflows.reduce((n, wf) => n + wf.jobs.length, 0);
-  return `${document.workflows.length} workflow(s), ${jobs} steps`;
+  return `${document.workflows.length} workflow(s), ${jobs} steps, one run at a time`;
 }
 
 // Reference data the workflow reads at the start of every run

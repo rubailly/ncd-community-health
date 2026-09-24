@@ -15,4 +15,51 @@ collections:
   - ncd-config   # reference data, loaded from reference-data/ by `make bootstrap`
   - ncd-state    # the workflow's cursor and last report time
 
-workflows: {}
+workflows:
+  ncd-referral-and-reporting:
+    name: NCD Community Referral & Reporting
+    triggers:
+      every-15-minutes:
+        type: cron
+        cron_expression: '*/15 * * * *'
+      webhook:
+        type: webhook   # manual runs; the body can pass options (see step 1)
+    jobs:
+      load-config:
+        name: 1. Load config & cursor
+        adaptor: '@openfn/language-common@3.3.5'
+        body: jobs/01-load-config.js
+      fetch-screenings:
+        name: 2. Fetch screenings (OpenMRS)
+        adaptor: '@openfn/language-http@7.3.3'
+        credential: OpenMRS
+        body: jobs/02-fetch-screenings.js
+      evaluate-and-route:
+        name: 3. Evaluate & route
+        adaptor: '@openfn/language-common@3.3.5'
+        body: jobs/03-evaluate-and-route.js
+      create-referrals:
+        name: 4. Create referrals (E-Buzima)
+        adaptor: '@openfn/language-http@7.3.3'
+        credential: E-Buzima
+        body: jobs/04-create-referrals.js
+      notify:
+        name: 5. Notify health centre & patient (WhatsApp)
+        adaptor: '@openfn/language-http@7.3.3'
+        credential: WhatsApp
+        body: jobs/05-notify.js
+      finish-referrals:
+        name: 6. Record notifications & advance cursor
+        adaptor: '@openfn/language-http@7.3.3'
+        credential: E-Buzima
+        body: jobs/06-finish-referrals.js
+    edges:
+      - from_to: every-15-minutes -> load-config
+        condition: always
+      - from_to: webhook -> load-config
+        condition: always
+      - from_to: load-config -> fetch-screenings
+      - from_to: fetch-screenings -> evaluate-and-route
+      - from_to: evaluate-and-route -> create-referrals
+      - from_to: create-referrals -> notify
+      - from_to: notify -> finish-referrals

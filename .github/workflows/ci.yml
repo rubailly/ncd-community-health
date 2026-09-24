@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Unit tests (workflow logic)
+        run: make test
+
+      - name: Tools install and load
+        run: |
+          cd tools && npm ci --no-audit --no-fund
+          cd .. && node tools/env.js
+          for f in tools/*.js tools/lib/*.js tools/systems/*.js; do node --check "$f"; done
+
+      - name: Workflow and reference data are consistent
+        run: |
+          node --input-type=module -e "
+            import { readFileSync, existsSync } from 'node:fs';
+            import YAML from './tools/node_modules/yaml/dist/index.js';
+            const project = YAML.parse(readFileSync('workflow/project.yaml', 'utf8'));
+            for (const wf of Object.values(project.workflows))
+              for (const [key, job] of Object.entries(wf.jobs))
+                if (!existsSync('workflow/' + job.body)) throw new Error('missing step file for ' + key);
+            const sites = JSON.parse(readFileSync('reference-data/sites/local.json', 'utf8'));
+            const codes = new Set(JSON.parse(readFileSync('reference-data/facilities.json', 'utf8')).facilities.map(f => f.code));
+            const locations = readFileSync('sandbox/openmrs/initializer/locations/locations.csv', 'utf8');
+            for (const [uuid, code] of Object.entries(sites)) {
+              if (uuid.startsWith('\$')) continue;
+              if (!codes.has(code)) throw new Error('site ' + uuid + ' routes to unknown facility ' + code);
+              if (!locations.includes(uuid)) throw new Error('site ' + uuid + ' is not an OpenMRS location');
+            }
+            console.log('consistent');"
+
+      - name: Compose configuration is valid
+        run: docker compose config --quiet

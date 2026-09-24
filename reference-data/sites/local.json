@@ -1,0 +1,15 @@
+{
+  "$comment": "OpenMRS community screening location UUID -> facility code. Locations are created by sandbox/openmrs/initializer/locations/ncd/locations.csv with these UUIDs. The 'Unrouted Community Site' location deliberately has no entry here, to exercise the routing-error path.",
+  "8933971e-14fe-4f0d-96a7-6bc566c5dd4f": "HC-4152",
+  "fadae16f-6251-4ba8-acf2-f6ed35ae78da": "HC-4154",
+  "0e251307-fee3-4c16-99c3-32f6457a1724": "HC-4156",
+  "3ad9dd53-70c7-42c5-aab4-ba3a6485d400": "HC-2731",
+  "c45bcd67-ef07-4fb2-9633-92c3515ff4e8": "HC-2733",
+  "2658f1ea-a278-415c-858b-10c50fb15646": "HC-2735",
+  "d538d1ad-de64-49ff-bd8d-035e7ab44020": "HC-2641",
+  "90f57546-4654-4586-a804-b14bea5978f9": "HC-2643",
+  "adc289e9-27f7-4d5b-b552-5cadd2bd26a3": "HC-2645",
+  "9c619a04-7bb6-4c6c-bc50-7473ba661f2b": "HC-2421",
+  "e31ca385-a4f8-41c5-8794-0f62605cb3f5": "HC-2423",
+  "79227d8e-12d2-4f4b-a5a5-42d3f5e90495": "HC-2425"
+}

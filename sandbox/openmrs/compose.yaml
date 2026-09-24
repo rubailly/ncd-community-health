@@ -1,0 +1,87 @@
+# OpenMRS 3 (community screening). The no-demo distribution plus this
+# programme's metadata, loaded by the Initializer module from ./initializer
+# (concepts, encounter type, screening sites, form, identifiers).
+
+x-initializer-config: &initializer-config
+  # Mounted beside the distribution's own config, so nothing upstream is replaced
+  - openmrs-data:/openmrs/data
+  - ./initializer/concepts:/openmrs/distribution/openmrs_config/concepts/ncd:ro
+  - ./initializer/encountertypes:/openmrs/distribution/openmrs_config/encountertypes/ncd:ro
+  - ./initializer/locations:/openmrs/distribution/openmrs_config/locations/ncd:ro
+  - ./initializer/personattributetypes:/openmrs/distribution/openmrs_config/personattributetypes/ncd:ro
+  - ./initializer/patientidentifiertypes:/openmrs/distribution/openmrs_config/patientidentifiertypes/ncd:ro
+  - ./initializer/idgen:/openmrs/distribution/openmrs_config/idgen/ncd:ro
+  - ./initializer/autogenerationoptions:/openmrs/distribution/openmrs_config/autogenerationoptions/ncd:ro
+  - ./initializer/globalproperties:/openmrs/distribution/openmrs_config/globalproperties/ncd:ro
+  - ./initializer/ampathforms:/openmrs/distribution/openmrs_config/ampathforms/ncd:ro
+
+services:
+  # Routes /openmrs/spa to the frontend and /openmrs to the backend
+  openmrs:
+    image: openmrs/openmrs-reference-application-3-gateway:3.7.x@sha256:8a8c78d6d974d3e071a6e29eb4679b4c84367c58ad16bb8b7dbe0d0a2234a14f
+    restart: unless-stopped
+    ports:
+      - "${OPENMRS_PORT}:80"
+    depends_on:
+      openmrs-frontend:
+        condition: service_started
+      openmrs-backend:
+        condition: service_healthy
+
+  openmrs-frontend:
+    image: openmrs/openmrs-reference-application-3-frontend:3.7.x@sha256:4cace305966a8b6c23f07b92b83e072e4c4333df8244241469ce8c627241239a
+    restart: unless-stopped
+    environment:
+      SPA_PATH: /openmrs/spa
+      API_URL: /openmrs
+      SPA_CONFIG_URLS: /openmrs/spa/config-core_demo.json
+    networks:
+      default:
+        aliases: [frontend]
+
+  openmrs-backend:
+    image: openmrs/openmrs-reference-application-3-backend:3.7.x-no-demo@sha256:b5c1cf42283bd3a4b8ead3f0c3b165a7190807a463343f3222a6a3fcd4be7943
+    restart: unless-stopped
+    environment:
+      OMRS_CONFIG_MODULE_WEB_ADMIN: "true"
+      OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
+      OMRS_CONFIG_CREATE_TABLES: "true"
+      OMRS_CONFIG_CONNECTION_SERVER: openmrs-db
+      OMRS_CONFIG_CONNECTION_DATABASE: openmrs
+      OMRS_CONFIG_CONNECTION_USERNAME: openmrs
+      OMRS_CONFIG_CONNECTION_PASSWORD: openmrs
+    volumes: *initializer-config
+    networks:
+      default:
+        aliases: [backend]
+    depends_on:
+      openmrs-db:
+        condition: service_healthy
+    # Healthy only once the REST API authenticates, not when the setup wizard answers
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs -u admin:Admin123 http://localhost:8080/openmrs/ws/rest/v1/session | grep -q '\"authenticated\":true'"]
+      interval: 15s
+      timeout: 10s
+      retries: 240
+      start_period: 120s
+
+  openmrs-db:
+    image: mariadb:10.11.7
+    restart: unless-stopped
+    command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_general_ci"]
+    environment:
+      MYSQL_DATABASE: openmrs
+      MYSQL_USER: openmrs
+      MYSQL_PASSWORD: openmrs
+      MYSQL_ROOT_PASSWORD: openmrs
+    volumes:
+      - openmrs-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  openmrs-data:
+  openmrs-db-data:

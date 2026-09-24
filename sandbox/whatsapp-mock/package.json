@@ -1,0 +1,7 @@
+{
+  "name": "whatsapp-mock",
+  "private": true,
+  "type": "module",
+  "description": "Local stand-in for the WhatsApp Cloud API",
+  "scripts": { "start": "node server.js" }
+}

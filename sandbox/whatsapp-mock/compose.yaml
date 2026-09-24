@@ -1,0 +1,7 @@
+services:
+  whatsapp:
+    image: ncd/whatsapp-mock:local
+    build: ./
+    restart: unless-stopped
+    ports:
+      - "${WHATSAPP_PORT}:9000"

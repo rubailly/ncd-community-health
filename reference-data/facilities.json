@@ -1,0 +1,24 @@
+{
+  "$comment": "Health centres that receive NCD referrals. `code` links a facility across systems: DHIS2 org unit code, E-Buzima company field, and the routing target in sites/*.json.",
+  "country": { "code": "RW", "name": "Rwanda" },
+  "districts": [
+    { "code": "RW-KMY", "name": "Kamonyi" },
+    { "code": "RW-RSZ", "name": "Rusizi" },
+    { "code": "RW-NYM", "name": "Nyamasheke" },
+    { "code": "RW-KRG", "name": "Karongi" }
+  ],
+  "facilities": [
+    { "code": "HC-4152", "name": "Kamonyi Health Center", "district": "RW-KMY", "whatsapp": "+250788100001" },
+    { "code": "HC-4154", "name": "Gacurabwenge Health Center", "district": "RW-KMY", "whatsapp": "+250788100002" },
+    { "code": "HC-4156", "name": "Musambira Health Center", "district": "RW-KMY", "whatsapp": "+250788100003" },
+    { "code": "HC-2731", "name": "Gihundwe Health Center", "district": "RW-RSZ", "whatsapp": "+250788200001" },
+    { "code": "HC-2733", "name": "Kamembe Health Center", "district": "RW-RSZ", "whatsapp": "+250788200002" },
+    { "code": "HC-2735", "name": "Bugarama Health Center", "district": "RW-RSZ", "whatsapp": "+250788200003" },
+    { "code": "HC-2641", "name": "Nyamasheke Health Center", "district": "RW-NYM", "whatsapp": "+250788300001" },
+    { "code": "HC-2643", "name": "Shangi Health Center", "district": "RW-NYM", "whatsapp": "+250788300002" },
+    { "code": "HC-2645", "name": "Bushekeri Health Center", "district": "RW-NYM", "whatsapp": "+250788300003" },
+    { "code": "HC-2421", "name": "Karongi Health Center", "district": "RW-KRG", "whatsapp": "+250788400001" },
+    { "code": "HC-2423", "name": "Bwishyura Health Center", "district": "RW-KRG", "whatsapp": "+250788400002" },
+    { "code": "HC-2425", "name": "Gitesi Health Center", "district": "RW-KRG", "whatsapp": "+250788400003" }
+  ]
+}

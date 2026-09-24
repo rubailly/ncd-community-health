@@ -1,0 +1,65 @@
+# OpenFn Lightning (the integration platform) and its worker.
+
+services:
+  openfn:
+    image: openfn/lightning:v2.19.0
+    restart: unless-stopped
+    # The image doesn't migrate on boot. Migrations are idempotent, so run them on every start.
+    command: ["sh", "-c", "/app/bin/migrate && exec /app/bin/server"]
+    environment:
+      DATABASE_URL: postgresql://lightning:lightning@openfn-db:5432/lightning
+      DISABLE_DB_SSL: "true"
+      SECRET_KEY_BASE: ${OPENFN_SECRET_KEY_BASE}
+      PRIMARY_ENCRYPTION_KEY: ${OPENFN_ENCRYPTION_KEY}
+      WORKER_SECRET: ${OPENFN_WORKER_SECRET}
+      WORKER_RUNS_PRIVATE_KEY: ${OPENFN_WORKER_RUNS_PRIVATE_KEY}
+      # Listen on all interfaces so the port mapping (and the worker) can reach it
+      LISTEN_ADDRESS: 0.0.0.0
+      PORT: "4000"
+      URL_SCHEME: http
+      URL_HOST: localhost
+      URL_PORT: ${OPENFN_PORT}
+      ORIGINS: http://localhost:${OPENFN_PORT}
+      LOG_LEVEL: info
+    ports:
+      - "${OPENFN_PORT}:4000"
+    depends_on:
+      openfn-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:4000/health_check || wget -qO- http://localhost:4000/health_check || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  openfn-worker:
+    image: openfn/ws-worker:v1.29.4
+    restart: unless-stopped
+    environment:
+      WORKER_LIGHTNING_SERVICE_URL: ws://openfn:4000/worker
+      WORKER_SECRET: ${OPENFN_WORKER_SECRET}
+      WORKER_COLLECTIONS_URL: http://openfn:4000/collections
+      WORKER_COLLECTIONS_VERSION: 0.9.4
+      WORKER_LOG_LEVEL: info
+    depends_on:
+      openfn:
+        condition: service_healthy
+
+  openfn-db:
+    image: postgres:16.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lightning
+      POSTGRES_USER: lightning
+      POSTGRES_PASSWORD: lightning
+    volumes:
+      - openfn-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lightning -d lightning"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  openfn-db-data:

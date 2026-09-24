@@ -1,0 +1,11 @@
+# NCD Community Health: every system, running locally and connected.
+# Use `make up` rather than calling compose directly; it also creates .env and
+# bootstraps each system. See README.md.
+name: ncd
+
+include:
+  - sandbox/openmrs/compose.yaml
+  - sandbox/erpnext/compose.yaml
+  - sandbox/dhis2/compose.yaml
+  - sandbox/openfn/compose.yaml
+  - sandbox/whatsapp-mock/compose.yaml

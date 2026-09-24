@@ -1,0 +1,5 @@
+.env
+node_modules/
+tools/.cache/
+workflow/.state.json
+*.log

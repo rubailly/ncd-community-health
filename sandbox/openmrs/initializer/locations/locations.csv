@@ -1,0 +1,14 @@
+Uuid,Void/Retire,Name,Description,Parent,Tag|Login Location,Tag|Visit Location,_order:1000
+8933971e-14fe-4f0d-96a7-6bc566c5dd4f,,Kamonyi Community Site,Community NCD screening site in the Kamonyi Health Center catchment,,TRUE,TRUE
+fadae16f-6251-4ba8-acf2-f6ed35ae78da,,Gacurabwenge Community Site,Community NCD screening site in the Gacurabwenge Health Center catchment,,TRUE,TRUE
+0e251307-fee3-4c16-99c3-32f6457a1724,,Musambira Community Site,Community NCD screening site in the Musambira Health Center catchment,,TRUE,TRUE
+3ad9dd53-70c7-42c5-aab4-ba3a6485d400,,Gihundwe Community Site,Community NCD screening site in the Gihundwe Health Center catchment,,TRUE,TRUE
+c45bcd67-ef07-4fb2-9633-92c3515ff4e8,,Kamembe Community Site,Community NCD screening site in the Kamembe Health Center catchment,,TRUE,TRUE
+2658f1ea-a278-415c-858b-10c50fb15646,,Bugarama Community Site,Community NCD screening site in the Bugarama Health Center catchment,,TRUE,TRUE
+d538d1ad-de64-49ff-bd8d-035e7ab44020,,Nyamasheke Community Site,Community NCD screening site in the Nyamasheke Health Center catchment,,TRUE,TRUE
+90f57546-4654-4586-a804-b14bea5978f9,,Shangi Community Site,Community NCD screening site in the Shangi Health Center catchment,,TRUE,TRUE
+adc289e9-27f7-4d5b-b552-5cadd2bd26a3,,Bushekeri Community Site,Community NCD screening site in the Bushekeri Health Center catchment,,TRUE,TRUE
+9c619a04-7bb6-4c6c-bc50-7473ba661f2b,,Karongi Community Site,Community NCD screening site in the Karongi Health Center catchment,,TRUE,TRUE
+e31ca385-a4f8-41c5-8794-0f62605cb3f5,,Bwishyura Community Site,Community NCD screening site in the Bwishyura Health Center catchment,,TRUE,TRUE
+79227d8e-12d2-4f4b-a5a5-42d3f5e90495,,Gitesi Community Site,Community NCD screening site in the Gitesi Health Center catchment,,TRUE,TRUE
+76ad4192-5094-48a5-8ce2-94083e58bd6e,,Unrouted Community Site,Screening site with no health centre routing (exercises the routing-error path),,TRUE,TRUE

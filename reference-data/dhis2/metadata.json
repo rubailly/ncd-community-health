@@ -1,0 +1,103 @@
+{
+  "$comment": "DHIS2 metadata for the Community NCD Screening data set (docs/decisions/0003). Organisation units are generated from reference-data/facilities.json at bootstrap and assigned to the data set there. The workflow addresses everything by code.",
+  "categoryOptions": [
+    { "id": "a08Q6IOSjJK", "code": "SEX_MALE", "name": "Male", "shortName": "Male" },
+    { "id": "YU0d2BrxWPC", "code": "SEX_FEMALE", "name": "Female", "shortName": "Female" },
+    { "id": "WI7v8wCIpUd", "code": "AGE_LT40", "name": "Under 40", "shortName": "<40" },
+    { "id": "qnr1cfLxYE5", "code": "AGE_40_59", "name": "40 to 59", "shortName": "40-59" },
+    { "id": "WueqDoGMF2D", "code": "AGE_60P", "name": "60 and over", "shortName": "60+" }
+  ],
+  "categories": [
+    {
+      "id": "CB97Crc02Jk", "code": "NCD_SEX", "name": "NCD Sex", "shortName": "Sex",
+      "dataDimensionType": "DISAGGREGATION", "dataDimension": true,
+      "categoryOptions": [{ "id": "a08Q6IOSjJK" }, { "id": "YU0d2BrxWPC" }]
+    },
+    {
+      "id": "JzPUMAhGr0l", "code": "NCD_AGE", "name": "NCD Age group", "shortName": "Age group",
+      "dataDimensionType": "DISAGGREGATION", "dataDimension": true,
+      "categoryOptions": [{ "id": "WI7v8wCIpUd" }, { "id": "qnr1cfLxYE5" }, { "id": "WueqDoGMF2D" }]
+    }
+  ],
+  "categoryCombos": [
+    {
+      "id": "DZHKAGp2hVb", "code": "NCD_SEX_AGE", "name": "NCD Sex and age group",
+      "dataDimensionType": "DISAGGREGATION",
+      "categories": [{ "id": "CB97Crc02Jk" }, { "id": "JzPUMAhGr0l" }]
+    }
+  ],
+  "dataElements": [
+    {
+      "id": "FoYL8sAgiCi", "code": "NCD_SCREENED", "name": "NCD community - people screened", "shortName": "NCD people screened",
+      "formName": "People screened", "description": "People screened for hypertension and diabetes at community sites",
+      "domainType": "AGGREGATE", "valueType": "INTEGER_ZERO_OR_POSITIVE", "aggregationType": "SUM",
+      "zeroIsSignificant": true, "categoryCombo": { "id": "DZHKAGp2hVb" }
+    },
+    {
+      "id": "batAmyJON9w", "code": "NCD_ELEVATED_BP", "name": "NCD community - elevated blood pressure", "shortName": "NCD elevated BP",
+      "formName": "Elevated blood pressure", "description": "Screened people with a blood pressure reading at or above the referral threshold",
+      "domainType": "AGGREGATE", "valueType": "INTEGER_ZERO_OR_POSITIVE", "aggregationType": "SUM",
+      "zeroIsSignificant": true, "categoryCombo": { "id": "DZHKAGp2hVb" }
+    },
+    {
+      "id": "KFn1FZoxd8P", "code": "NCD_ELEVATED_GLUCOSE", "name": "NCD community - elevated blood glucose", "shortName": "NCD elevated glucose",
+      "formName": "Elevated blood glucose", "description": "Screened people with a blood glucose reading at or above the referral threshold",
+      "domainType": "AGGREGATE", "valueType": "INTEGER_ZERO_OR_POSITIVE", "aggregationType": "SUM",
+      "zeroIsSignificant": true, "categoryCombo": { "id": "DZHKAGp2hVb" }
+    },
+    {
+      "id": "VH5tyKbgZMT", "code": "NCD_REFERRALS_ISSUED", "name": "NCD community - referrals issued", "shortName": "NCD referrals issued",
+      "formName": "Referrals issued", "description": "Referrals to the health centre created for screenings in the period",
+      "domainType": "AGGREGATE", "valueType": "INTEGER_ZERO_OR_POSITIVE", "aggregationType": "SUM",
+      "zeroIsSignificant": true, "categoryCombo": { "id": "DZHKAGp2hVb" }
+    },
+    {
+      "id": "pFuWSUSzxGa", "code": "NCD_REFERRALS_COMPLETED", "name": "NCD community - referrals completed", "shortName": "NCD referrals completed",
+      "formName": "Referrals completed", "description": "Referrals issued in the period where the patient attended the health centre",
+      "domainType": "AGGREGATE", "valueType": "INTEGER_ZERO_OR_POSITIVE", "aggregationType": "SUM",
+      "zeroIsSignificant": true, "categoryCombo": { "id": "DZHKAGp2hVb" }
+    }
+  ],
+  "dataSets": [
+    {
+      "id": "jsbgRsMn7PT", "code": "NCD_COMMUNITY_SCREENING", "name": "Community NCD Screening", "shortName": "Community NCD Screening",
+      "description": "Monthly community hypertension and diabetes screening and referral outcomes, reported automatically from OpenMRS and E-Buzima",
+      "periodType": "Monthly", "openFuturePeriods": 0, "expiryDays": 0, "timelyDays": 15,
+      "categoryCombo": { "id": "bjDvmb4bfuf" },
+      "dataSetElements": [
+        { "dataElement": { "id": "FoYL8sAgiCi" } },
+        { "dataElement": { "id": "batAmyJON9w" } },
+        { "dataElement": { "id": "KFn1FZoxd8P" } },
+        { "dataElement": { "id": "VH5tyKbgZMT" } },
+        { "dataElement": { "id": "pFuWSUSzxGa" } }
+      ],
+      "organisationUnits": []
+    }
+  ],
+  "indicatorTypes": [
+    { "id": "hGVidMJObtQ", "code": "NCD_PERCENT", "name": "NCD Percentage", "factor": 100, "number": false }
+  ],
+  "indicators": [
+    {
+      "id": "wYeRcGfnLQq", "code": "NCD_BP_POSITIVITY", "name": "NCD community - elevated blood pressure rate", "shortName": "NCD BP positivity",
+      "description": "Share of people screened with elevated blood pressure",
+      "indicatorType": { "id": "hGVidMJObtQ" },
+      "numerator": "#{batAmyJON9w}", "numeratorDescription": "Elevated blood pressure",
+      "denominator": "#{FoYL8sAgiCi}", "denominatorDescription": "People screened"
+    },
+    {
+      "id": "JmgfW975HLd", "code": "NCD_GLUCOSE_POSITIVITY", "name": "NCD community - elevated blood glucose rate", "shortName": "NCD glucose positivity",
+      "description": "Share of people screened with elevated blood glucose",
+      "indicatorType": { "id": "hGVidMJObtQ" },
+      "numerator": "#{KFn1FZoxd8P}", "numeratorDescription": "Elevated blood glucose",
+      "denominator": "#{FoYL8sAgiCi}", "denominatorDescription": "People screened"
+    },
+    {
+      "id": "Gs8awWFygCV", "code": "NCD_REFERRAL_COMPLETION", "name": "NCD community - referral completion rate", "shortName": "NCD referral completion",
+      "description": "Share of referrals where the patient attended the health centre",
+      "indicatorType": { "id": "hGVidMJObtQ" },
+      "numerator": "#{pFuWSUSzxGa}", "numeratorDescription": "Referrals completed",
+      "denominator": "#{VH5tyKbgZMT}", "denominatorDescription": "Referrals issued"
+    }
+  ]
+}

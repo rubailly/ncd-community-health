@@ -1,0 +1,21 @@
+{
+  "$comment": "A screening is flagged for a condition when any of its readings meets or exceeds the threshold. Concepts are standard CIEL UUIDs. `dhis2` names the DHIS2 data element the condition is counted under.",
+  "conditions": [
+    {
+      "name": "Hypertension",
+      "dhis2": "NCD_ELEVATED_BP",
+      "readings": [
+        { "concept": "5085AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "label": "Systolic blood pressure", "unit": "mmHg", "threshold": 140 },
+        { "concept": "5086AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "label": "Diastolic blood pressure", "unit": "mmHg", "threshold": 90 }
+      ]
+    },
+    {
+      "name": "Diabetes",
+      "dhis2": "NCD_ELEVATED_GLUCOSE",
+      "readings": [
+        { "concept": "160912AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "label": "Fasting blood glucose", "unit": "mg/dL", "threshold": 126 },
+        { "concept": "887AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "label": "Random blood glucose", "unit": "mg/dL", "threshold": 200 }
+      ]
+    }
+  ]
+}

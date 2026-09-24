@@ -1,0 +1,5 @@
+Uuid,Void/Retire,Same as mappings,Fully specified name:en,Short name:en,Description:en,Data class,Data type,Absolute low,Critical low,Normal low,Normal high,Critical high,Absolute high,Units,Allow decimals,Display precision,_version:1,_order:1000
+5085AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,,CIEL:5085,Systolic blood pressure,SBP,Systolic blood pressure measurement,Finding,Numeric,0,85,100,140,180,250,mmHg,No,,,
+5086AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,,CIEL:5086,Diastolic blood pressure,DBP,Diastolic blood pressure measurement,Finding,Numeric,0,40,55,90,120,150,mmHg,No,,,
+160912AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,,CIEL:160912,Fasting blood glucose measurement (mg/dL),FBG,Blood glucose measured after fasting,Test,Numeric,0,,70,100,,1000,mg/dL,Yes,1,,
+887AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,,CIEL:887,Serum glucose,RBG,Random (non-fasting) blood glucose,Test,Numeric,0,,70,140,,1000,mg/dL,Yes,1,,

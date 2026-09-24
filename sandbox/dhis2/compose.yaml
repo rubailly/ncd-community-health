@@ -1,0 +1,40 @@
+# DHIS2, the national reporting platform. Starts with an empty database;
+# `make up` imports the programme's metadata (reference-data/dhis2/metadata.json).
+
+services:
+  dhis2:
+    image: dhis2/core:2.42.6
+    restart: unless-stopped
+    environment:
+      JAVA_OPTS: "-Xms512m -Xmx2g"
+    volumes:
+      - ./dhis.conf:/opt/dhis2/dhis.conf:ro
+    ports:
+      - "${DHIS2_PORT}:8080"
+    depends_on:
+      dhis2-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/api/ping || wget -qO- http://localhost:8080/api/ping || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+
+  dhis2-db:
+    image: postgis/postgis:16-3.5-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dhis2
+      POSTGRES_USER: dhis
+      POSTGRES_PASSWORD: dhis
+    volumes:
+      - dhis2-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dhis -d dhis2"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  dhis2-db-data:

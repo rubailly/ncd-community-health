@@ -1,0 +1,28 @@
+{
+  "$comment": "Programme rules and system identifiers the workflow needs. See docs/decisions/0005-workflow-engineering-rules.md.",
+  "openmrs": {
+    "encounterType": "003429e3-68b5-43ba-b3ef-96b13a4cdd3f",
+    "openmrsIdType": "05a29f94-c0ed-11e2-94be-8c13b969e334"
+  },
+  "referral": {
+    "appointmentOffsetDays": 1,
+    "appointmentType": "NCD Follow-Up",
+    "department": "NCD Clinic",
+    "completedStatuses": ["Checked In", "Checked Out", "Closed"]
+  },
+  "notifications": {
+    "healthCentreTemplate": "ncd_referral_hc_notify",
+    "patientTemplate": "ncd_referral_patient_notify",
+    "language": "en"
+  },
+  "reporting": {
+    "dataSet": "NCD_COMMUNITY_SCREENING",
+    "intervalMinutes": 60,
+    "lateDataDays": 10,
+    "ageGroups": [
+      { "code": "AGE_LT40", "maxAge": 39 },
+      { "code": "AGE_40_59", "maxAge": 59 },
+      { "code": "AGE_60P", "maxAge": null }
+    ]
+  }
+}

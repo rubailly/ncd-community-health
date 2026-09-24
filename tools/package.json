@@ -1,0 +1,7 @@
+{
+  "name": "ncd-tools",
+  "private": true,
+  "type": "module",
+  "description": "Bootstrap, seed and test the local NCD Community Health sandbox",
+  "engines": { "node": ">=20" }
+}

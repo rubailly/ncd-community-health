@@ -53,6 +53,25 @@ workflows:
         adaptor: '@openfn/language-http@7.3.3'
         credential: E-Buzima
         body: jobs/06-finish-referrals.js
+      fetch-period-screenings:
+        name: 7. Fetch the month's screenings (OpenMRS)
+        adaptor: '@openfn/language-http@7.3.3'
+        credential: OpenMRS
+        body: jobs/07-fetch-period-screenings.js
+      fetch-period-referrals:
+        name: 8. Fetch the month's referrals (E-Buzima)
+        adaptor: '@openfn/language-http@7.3.3'
+        credential: E-Buzima
+        body: jobs/08-fetch-period-referrals.js
+      build-report:
+        name: 9. Build the DHIS2 report
+        adaptor: '@openfn/language-common@3.3.5'
+        body: jobs/09-build-report.js
+      push-to-dhis2:
+        name: 10. Push to DHIS2
+        adaptor: '@openfn/language-http@7.3.3'
+        credential: DHIS2
+        body: jobs/10-push-to-dhis2.js
     edges:
       - from_to: every-15-minutes -> load-config
         condition: always
@@ -63,3 +82,11 @@ workflows:
       - from_to: evaluate-and-route -> create-referrals
       - from_to: create-referrals -> notify
       - from_to: notify -> finish-referrals
+      # Reporting branch: only when step 1 found a report due
+      - from_to: load-config -> fetch-period-screenings
+        condition: js_expression
+        expression: state.reportPeriods.length > 0
+        label: DHIS2 report due
+      - from_to: fetch-period-screenings -> fetch-period-referrals
+      - from_to: fetch-period-referrals -> build-report
+      - from_to: build-report -> push-to-dhis2

@@ -77,6 +77,9 @@ export async function importMetadata() {
     totals.created += stats.created;
     totals.updated += stats.updated;
   }
+  // Otherwise DHIS2 can keep validating data against cached, pre-import
+  // metadata (e.g. a data set's open periods)
+  await api('POST', 'maintenance/cacheClear');
   return `${totals.created} created, ${totals.updated} updated`;
 }
 

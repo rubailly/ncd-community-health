@@ -8,7 +8,8 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { section, step, main, green } from './lib/steps.js';
 import { env, urls, readJson } from './lib/config.js';
-import { request } from './lib/http.js';
+import { request, basicAuth } from './lib/http.js';
+import { uidFor } from './systems/dhis2.js';
 import { runWorkflow } from './lib/runs.js';
 import { createPatient, createScreening } from './systems/openmrs.js';
 
@@ -50,13 +51,44 @@ async function appointmentFor(encounter) {
   return appointment;
 }
 
+// DHIS2 values for this month at a facility, for women aged 40–59 (every test patient)
+async function dhis2Values(facility) {
+  const auth = { Authorization: basicAuth(env.DHIS2_ADMIN_USER, env.DHIS2_ADMIN_PASSWORD) };
+  const get = (path, query) => request('GET', `${urls.dhis2}/api/${path}`, { query, headers: auth }).then(r => r.data);
+  const { categoryOptionCombos } = await get('categoryOptionCombos', {
+    filter: 'categoryCombo.code:eq:NCD_SEX_AGE',
+    fields: 'id,categoryOptions[code]',
+    paging: false,
+  });
+  const combo = categoryOptionCombos.find(c => ['SEX_FEMALE', 'AGE_40_59'].every(code => c.categoryOptions.some(o => o.code === code))).id;
+  const { dataValues = [] } = await get('dataValueSets', {
+    dataSet: 'jsbgRsMn7PT',
+    period: kigaliMonth(),
+    orgUnit: uidFor(facility),
+    dataElementIdScheme: 'CODE',
+  });
+  return Object.fromEntries(dataValues.filter(v => v.categoryOptionCombo === combo).map(v => [v.dataElement, Number(v.value)]));
+}
+
+const kigaliMonth = () => new Date(Date.now() + 2 * 3600_000).toISOString().slice(0, 7).replace('-', '');
+
 const messagesTo = async number =>
   number ? (await request('GET', `${urls.whatsapp}/messages`, { query: { to: number } })).data : [];
 
 main(async () => {
-  const startedAt = new Date(Date.now() - 1000).toISOString();
   const facilities = Object.fromEntries(readJson('reference-data/facilities.json').facilities.map(f => [f.code, f]));
   console.log(`Test run ${tag}`);
+
+  section('Baseline: current DHIS2 figures');
+  const before = {};
+  await step('report run', async () => (await runWorkflow({ report: true })).state);
+  for (const code of ['HC-4152', 'HC-2425']) {
+    await step(`${code} values`, async () => {
+      before[code] = await dhis2Values(code);
+      return JSON.stringify(before[code]);
+    });
+  }
+  const startedAt = new Date(Date.now() - 1000).toISOString();
 
   section('Arrange: screenings in OpenMRS');
   for (const c of CASES) {
@@ -118,15 +150,42 @@ main(async () => {
     for (const c of CASES.filter(c => !c.expect || c.expect === 'routing-error')) assert.equal((await messagesTo(c.phone)).length, 0);
   });
 
-  section('Assert: reruns are idempotent');
-  await step('second run over the same screenings', async () => {
-    const second = await runWorkflow({ since: startedAt });
+  section('Act: a referred patient attends the health centre');
+  await step('check in the Hypertension patient at Kamonyi', async () => {
+    const bp = await appointmentFor(CASES.find(c => c.key === 'bp').encounter);
+    await request('POST', `${urls.erpnext}/api/method/healthcare.healthcare.doctype.patient_appointment.patient_appointment.update_status`, {
+      headers: { Authorization: `token ${env.ERPNEXT_API_KEY}:${env.ERPNEXT_API_SECRET}` },
+      body: { appointment_id: bp.name, status: 'Checked In' },
+    });
+    return bp.name;
+  });
+
+  section('Assert: reruns are idempotent, and report to DHIS2');
+  await step('second run over the same screenings, with a report', async () => {
+    const second = await runWorkflow({ since: startedAt, report: true });
     const log = second.logs.map(l => String(l.message)).join('\n');
     assert.match(log, /Referrals: 0 created, 4 already existed, 0 failed/);
     assert.match(log, /WhatsApp: 0 message\(s\) sent/);
     for (const c of CASES) assert.ok((await messagesTo(c.phone)).length <= 1, `${c.key}: no duplicate messages`);
+    assert.match(log, /DHIS2: \d+ imported, \d+ updated, \d+ unchanged/, 'the report reached DHIS2');
     return second.state;
   });
+
+  section('Assert: DHIS2 national reporting (women 40–59, this month)');
+  const expected = {
+    // bp, both, normal screened at Kamonyi; bp + both referred; bp attended
+    'HC-4152': { NCD_SCREENED: 3, NCD_ELEVATED_BP: 2, NCD_ELEVATED_GLUCOSE: 1, NCD_REFERRALS_ISSUED: 2, NCD_REFERRALS_COMPLETED: 1 },
+    // glucose, nophone screened and referred at Gitesi
+    'HC-2425': { NCD_SCREENED: 2, NCD_ELEVATED_BP: 1, NCD_ELEVATED_GLUCOSE: 1, NCD_REFERRALS_ISSUED: 2, NCD_REFERRALS_COMPLETED: 0 },
+  };
+  for (const [code, deltas] of Object.entries(expected)) {
+    await step(`${facilities[code].name}: counts rose by this test's screenings`, async () => {
+      const after = await dhis2Values(code);
+      for (const [element, delta] of Object.entries(deltas)) {
+        assert.equal((after[element] ?? 0) - (before[code][element] ?? 0), delta, `${element}`);
+      }
+    });
+  }
 
   console.log(`\n${green('End-to-end test passed')} (${tag})`);
 });

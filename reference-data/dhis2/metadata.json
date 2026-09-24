@@ -1,5 +1,5 @@
 {
-  "$comment": "DHIS2 metadata for the Community NCD Screening data set (docs/decisions/0003). Organisation units are generated from reference-data/facilities.json at bootstrap and assigned to the data set there. The workflow addresses everything by code.",
+  "$comment": "DHIS2 metadata for the Community NCD Screening data set (docs/decisions/0003). Organisation units are generated from reference-data/facilities.json at bootstrap and assigned to the data set there. The workflow addresses everything by code. openFuturePeriods is 2 because DHIS2 2.42 only accepts the month in progress (the workflow reports month-to-date) with 2.",
   "categoryOptions": [
     { "id": "a08Q6IOSjJK", "code": "SEX_MALE", "name": "Male", "shortName": "Male" },
     { "id": "YU0d2BrxWPC", "code": "SEX_FEMALE", "name": "Female", "shortName": "Female" },
@@ -62,7 +62,7 @@
     {
       "id": "jsbgRsMn7PT", "code": "NCD_COMMUNITY_SCREENING", "name": "Community NCD Screening", "shortName": "Community NCD Screening",
       "description": "Monthly community hypertension and diabetes screening and referral outcomes, reported automatically from OpenMRS and E-Buzima",
-      "periodType": "Monthly", "openFuturePeriods": 0, "expiryDays": 0, "timelyDays": 15,
+      "periodType": "Monthly", "openFuturePeriods": 2, "expiryDays": 0, "timelyDays": 15,
       "categoryCombo": { "id": "bjDvmb4bfuf" },
       "dataSetElements": [
         { "dataElement": { "id": "FoYL8sAgiCi" } },

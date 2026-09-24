@@ -4,6 +4,7 @@
     "encounterType": "003429e3-68b5-43ba-b3ef-96b13a4cdd3f",
     "openmrsIdType": "05a29f94-c0ed-11e2-94be-8c13b969e334"
   },
+  "initialLookbackDays": 30,
   "referral": {
     "appointmentOffsetDays": 1,
     "appointmentType": "NCD Follow-Up",

@@ -15,7 +15,6 @@ const generators = {
   ERPNEXT_API_KEY: () => randomBytes(8).toString('hex'),
   ERPNEXT_API_SECRET: () => randomBytes(12).toString('hex'),
   OPENFN_ADMIN_PASSWORD: () => random(12),
-  OPENFN_API_TOKEN: () => random(32),
   OPENFN_SECRET_KEY_BASE: () => randomBytes(64).toString('base64'),
   // Lightning expects a base64-encoded 32-byte key
   OPENFN_ENCRYPTION_KEY: () => randomBytes(32).toString('base64'),

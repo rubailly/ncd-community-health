@@ -1,0 +1,18 @@
+# The OpenFn project. `make deploy` provisions it into the local Lightning.
+#
+# Conventions (read by tools/systems/openfn.js):
+#   - `body` is a path to the step's code, relative to this file
+#   - `credential` names a credential created by `make bootstrap`
+#   - `from_to` connects a trigger or step to the next step
+# Lightning project names are URL-safe: lowercase, digits and dashes
+name: ncd-community-health
+description: >-
+  Refers community NCD screenings with high readings from OpenMRS to the
+  health centre in E-Buzima, notifies the health centre and patient on
+  WhatsApp, and reports monthly aggregates to DHIS2.
+
+collections:
+  - ncd-config   # reference data, loaded from reference-data/ by `make bootstrap`
+  - ncd-state    # the workflow's cursor and last report time
+
+workflows: {}
